@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live Crypto Prices</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script>
+        function updatePrices() {
+            fetch('/prices')
+                .then(response => response.json())
+                .then(data => {
+                    for (const [symbol, price] of Object.entries(data)) {
+                        const el = document.getElementById(symbol);
+                        if (el) el.innerText = `$${price.toLocaleString()}`;
+                    }
+                });
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('light-mode');
+            const mode = body.classList.contains('light-mode') ? 'light' : 'dark';
+            localStorage.setItem('theme', mode);
+        }
+
+        window.onload = () => {
+            if (localStorage.getItem('theme') === 'light') {
+                document.body.classList.add('light-mode');
+            }
+            updatePrices();
+            setInterval(updatePrices, 15000);
+        }
+    </script>
+</head>
+<body>
+    <button class="toggle-btn" onclick="toggleTheme()">Toggle Dark/Light</button>
+    <h1>Live Crypto Prices (Bybit)</h1>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Coin</th>
+                    <th>Price (USD)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for symbol, price in prices.items() %}
+                <tr>
+                    <td class="symbol">
+                        <img src="{{ logos[symbol.replace('USDT', '')] }}" alt="{{ symbol }}" width="24" height="24" >
+                        {{ symbol.replace('USDT', '') }}
+                    </td>
+                    <td class="price" id="{{ symbol }}">${{ price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
